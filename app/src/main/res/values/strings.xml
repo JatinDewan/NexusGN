@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">NexusGN</string>
+
+    <string name="basedOnSearch">Based on search phrase and ratings</string>
+    <string name="basedOnTrending">Based on player counts and release date</string>
+
+    <string name="gameImages">Game Images</string>
+
+    <string name="Highlighted">Highlighted</string>
+    <string name="Trending">Trending</string>
+    <string name="AllGames">All Games</string>
+    <string name="NewRelease">New Release</string>
+    <string name="Top">Top</string>
+    <string name="Platforms">Platforms</string>
+
+    <string name="ThirtyDays">Last 30 days</string>
+    <string name="ThisWeek">This week</string>
+    <string name="NextWeek">Next week</string>
+    <string name="Upcoming">Coming this year</string>
+
+    <string name="BestOfYear">Best of </string>
+    <string name="PopularLastYear">Popular from </string>
+    <string name="AllTime">All time top 250</string>
+
+    <string name="Pc">PC</string>
+    <string name="Playstation4">Playstation 4</string>
+    <string name="XboxOne">Xbox One</string>
+    <string name="NintendoSwitch">Nintendo Switch</string>
+    <string name="iOS">iOS</string>
+    <string name="Android">Android</string>
+
+    <string name="playstation">playstation</string>
+    <string name="ps">ps</string>
+    <string name="mac">playstation</string>
+    <string name="ios">ios</string>
+
+    <string name="wii">wii</string>
+    <string name="gameBoy">game boy</string>
+    <string name="nes">nes</string>
+    <string name="gamecube">gamecube</string>
+
+    <string name="apple">apple</string>
+    <string name="nintendo">nintendo</string>
+    <string name="xbox">xbox</string>
+    <string name="pc">pc</string>
+    <string name="android">android</string>
+    <string name="linux">linux</string>
+    <string name="sega">sega</string>
+    <string name="atari">atari</string>
+    <string name="dreamcast">dreamcast</string>
+
+    <string name="exceptional">exceptional</string>
+    <string name="recommended">recommended</string>
+    <string name="meh">recommended</string>
+
+    <string name="Outstanding">Outstanding</string>
+    <string name="Impressive">Impressive</string>
+    <string name="Decent">Decent</string>
+    <string name="Trash">Trash</string>
+
+    <string name="poweredBy">Powered by RAWG</string>
+    <string name="releaseDate">Release date</string>
+    <string name="genre">Genres</string>
+    <string name="searchGames">Search for games</string>
+
+    <string name="Resume">Resume: </string>
+    <string name="Description">Description</string>
+    <string name="Show_less">Show less</string>*
+    <string name="Show_more">Show more</string>
+    <string name="Average_Playtime">Average Playtime: %s hours</string>
+    <string name="Screenshots">Screenshots</string>
+    <string name="Genre">Genre</string>
+    <string name="Rating">Rating</string>
+    <string name="Release_date">Release date</string>
+    <string name="Relevant_links">Relevant links</string>
+    <string name="Website">Website</string>
+    <string name="Reddit">Reddit</string>
+    <string name="Metacritic">Metacritic</string>
+    <string name="skip">skip</string>
+    <string name="New">New</string>
+    <string name="NoResults">No results found matching</string>
+    <string name="Recommended">Recommended results</string>
+    <string name="Related">Related</string>
+</resources>
