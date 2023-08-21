@@ -8,12 +8,14 @@ import java.util.Locale
 
 class DateConverter {
 
-    private val locale: Locale = Locale.getDefault()
-    private val calendar = Calendar.getInstance()
-    private val currentDate = calendar.time
-    private val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
+//    private val locale: Locale = Locale.getDefault()
+//    private val calendar = Calendar.getInstance()
+//    private val currentDate = calendar.time
+//    private val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
 
     fun convertDateFormat(inputDate: String): String {
+        val locale: Locale = Locale.getDefault()
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         val outputFormat = SimpleDateFormat("MMM dd, yyyy", locale)
 
         return try {
@@ -34,6 +36,10 @@ class DateConverter {
 
 
     fun bestRecently(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         calendar.add(Calendar.DAY_OF_YEAR, -90)
         val previousDate = calendar.time
         val previousDateStr = formatter.format(previousDate)
@@ -49,6 +55,10 @@ class DateConverter {
 //    }
 
     fun last30Days(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         calendar.add(Calendar.DAY_OF_YEAR, -30)
         val previousDate = calendar.time
         val previousDateStr = formatter.format(previousDate)
@@ -65,6 +75,10 @@ class DateConverter {
 //    }
 
     fun weekSoFar(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         val weekFields = Calendar.getInstance(Locale.getDefault()).firstDayOfWeek
         calendar.timeInMillis = currentDate.time - (calendar.get(Calendar.DAY_OF_WEEK) - weekFields) * 24 * 60 * 60 * 1000
         val firstDayOfWeek = calendar.time
@@ -88,6 +102,9 @@ class DateConverter {
 //    }
 
     fun nextWeek(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         calendar.add(Calendar.WEEK_OF_YEAR, 1)
         val nextWeekDate = calendar.time
 
@@ -117,6 +134,10 @@ class DateConverter {
 //    }
 
     fun comingThisYear(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         val lastDayOfYear = Calendar.getInstance()
         lastDayOfYear.time = currentDate
         lastDayOfYear.set(Calendar.MONTH, Calendar.DECEMBER)
@@ -137,6 +158,10 @@ class DateConverter {
 //    }
 
     fun bestOfThisYear(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         val firstDayOfYear = Calendar.getInstance()
         firstDayOfYear.time = currentDate
         firstDayOfYear.set(Calendar.MONTH, Calendar.JANUARY)
@@ -156,6 +181,10 @@ class DateConverter {
 //    }
 
     fun bestOfLastYear(): String {
+        val locale: Locale = Locale.getDefault()
+        val calendar = Calendar.getInstance()
+        val currentDate = calendar.time
+        val formatter = SimpleDateFormat("yyyy-MM-dd",locale)
         val lastYear = Calendar.getInstance()
         lastYear.time = currentDate
         lastYear.add(Calendar.YEAR, -1)
@@ -187,6 +216,7 @@ class DateConverter {
 
 
     fun current(): String {
+        val calendar = Calendar.getInstance()
         val currentYear = calendar.get(Calendar.YEAR)
         return currentYear.toString()
     }
@@ -197,6 +227,7 @@ class DateConverter {
 //    }
 
     fun last(): Int {
+        val calendar = Calendar.getInstance()
         calendar.add(Calendar.YEAR, -1)
         return calendar.get(Calendar.YEAR)
     }

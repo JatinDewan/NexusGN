@@ -9,7 +9,7 @@ sealed interface AllGamesApiResponse {
         val response: NexusGNData,
     ) : AllGamesApiResponse
     data class Error(val exception: Exception) : AllGamesApiResponse
-    data object Loading : AllGamesApiResponse
+    object Loading : AllGamesApiResponse
 }
 
 sealed interface SearchApiResponse{
@@ -17,7 +17,7 @@ sealed interface SearchApiResponse{
         val response: NexusGNData,
     ) : SearchApiResponse
     data class Error(val exception: Exception) : SearchApiResponse
-    data object Loading : SearchApiResponse
+    object Loading : SearchApiResponse
 }
 
 
@@ -26,7 +26,7 @@ sealed interface GameDetailsApiResponse{
         val gameDetails: GameDetails,
     ) : GameDetailsApiResponse
     data class Error(val exception: Exception) : GameDetailsApiResponse
-    data object Loading : GameDetailsApiResponse
+    object Loading : GameDetailsApiResponse
 }
 
 sealed interface ScreenshotsApiResponse{
@@ -34,5 +34,5 @@ sealed interface ScreenshotsApiResponse{
         val screenshots: Screenshots,
     ) : ScreenshotsApiResponse
     data class Error(val exception: Exception) : ScreenshotsApiResponse
-    data object Loading : ScreenshotsApiResponse
+    object Loading : ScreenshotsApiResponse
 }

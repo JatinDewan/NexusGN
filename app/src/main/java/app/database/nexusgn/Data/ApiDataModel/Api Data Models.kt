@@ -93,8 +93,7 @@ data class GameInformation(
     val platforms: List<Platforms>? = null,
     @SerialName(value = "background_image")
     val backgroundImage: String? = null,
-    @SerialName(value = "ratings_count")
-    val ratingsCount: Int? = null,
+    val ratings_count: Int? = null,
     val genres: List<Platform>? = null,
 )
 

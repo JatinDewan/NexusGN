@@ -54,12 +54,12 @@ class NexusGNViewModel @Inject constructor(
         viewModel = this,
         apiImpl = repository
     )
+
     val listUiStateFlow = MutableStateFlow(ListUiState())
     val uiStateList: StateFlow<ListUiState> = listUiStateFlow.asStateFlow()
 
     val gameUiStateFlow = MutableStateFlow(GamesUiState())
     val uiStateGameDetails: StateFlow<GamesUiState> = gameUiStateFlow.asStateFlow()
-
 
     val interactionUiState = MutableStateFlow(InteractionElements())
     val uiStateInteractionSource: StateFlow<InteractionElements> = interactionUiState.asStateFlow()
@@ -119,7 +119,7 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    private fun updateExclusion(exclusion: Boolean?){
+    private fun updateExclusion(exclusion: Boolean){
         viewModelScope.launch {
             gameUiStateFlow.update { updateField ->
                 updateField.copy(
@@ -305,7 +305,7 @@ class NexusGNViewModel @Inject constructor(
         header: String,
         date: String? = null,
         ordering: String? = null,
-        exclusion: Boolean? = null,
+        exclusion: Boolean = false,
         platforms: String? = null
     ){
         updateHeader(header)

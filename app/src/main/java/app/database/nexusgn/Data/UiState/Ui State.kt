@@ -8,9 +8,9 @@ data class ListUiState(
     val allGamesUi: List<GameInformation>? = null,
     val suggestedSearchResults: List<GameInformation>? = null,
     val relatedSearchResults: List<GameInformation>? = null,
-    val savedSearch: List<SavedSearch>? = null,
+    val savedSearch: List<SavedSearch>? = null
 
-    )
+)
 
 data class GamesUiState(
 
@@ -21,7 +21,7 @@ data class GamesUiState(
     val searchPhrase: String? = null,
     val dateModification: String? = null,
     val pageHeader: String? = null,
-    val excludeAdditions: Boolean? = null,
+    val excludeAdditions: Boolean = false,
     val platforms: String? = null,
     val highlightedGame: GameInformation? = null,
     val genres: String? = null

@@ -31,17 +31,10 @@ class RepositoryImpl(
         dates: String,
         ordering: String,
         excludeAdditions: Boolean,
-        platforms: String?,
-//        genres: String
+        platforms: String?
     ): NexusGNData {
         return api.getGameImageAndData(
-            page,
-            pageSize,
-            dates,
-            ordering,
-            excludeAdditions,
-            platforms,
-//            genres
+            page, pageSize, dates, ordering, excludeAdditions, platforms
         )
     }
 

@@ -9,7 +9,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
@@ -22,7 +21,6 @@ object DatabaseObject {
     private val json = Json { ignoreUnknownKeys = true }
     private const val BASE_URL = "https://api.rawg.io/api/"
 
-    @OptIn(ExperimentalSerializationApi::class)
     @Provides
     @Singleton
     fun providesApi(): RawgApi {

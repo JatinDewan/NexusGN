@@ -56,7 +56,7 @@ class ApiClassIntegration(
     private fun highlightedSearch() {
         try{
             val highlightedMetacritic = allGames.sortedBy { it.metacritic }.last()
-            val highlightedRawgRating = allGames.sortedBy { it.ratingsCount }.last()
+            val highlightedRawgRating = allGames.sortedBy { it.ratings_count }.last()
 
             viewModel.gameUiStateFlow.update { currentState ->
                 currentState.copy(
@@ -101,18 +101,16 @@ class ApiClassIntegration(
     fun getGames(){
         viewModel.viewModelScope.launch{
             try {
-                if (allGames.size <= 1000) {
-                    val result = apiImpl.networkCall(
-                        page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
-                        pageSize = viewModel.uiStateGameDetails.value.pageSize ?: 40,
-                        dates = viewModel.uiStateGameDetails.value.dateModification ?: "",
-                        ordering = viewModel.uiStateGameDetails.value.ordering ?: "",
-                        platforms = viewModel.uiStateGameDetails.value.platforms,
-                        excludeAdditions = viewModel.uiStateGameDetails.value.excludeAdditions ?: false,
-                    )
-                    updateResponse(result)
-                    updateMutableGamesList()
-                }
+                val result = apiImpl.networkCall(
+                    page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
+                    pageSize = viewModel.uiStateGameDetails.value.pageSize ?: 40,
+                    dates = viewModel.uiStateGameDetails.value.dateModification ?: "",
+                    ordering = viewModel.uiStateGameDetails.value.ordering ?: "",
+                    platforms = viewModel.uiStateGameDetails.value.platforms,
+                    excludeAdditions = viewModel.uiStateGameDetails.value.excludeAdditions,
+                )
+                updateResponse(result)
+                updateMutableGamesList()
                 highlightedSearch()
                 allGamesList()
             } catch (e: Exception) {
@@ -149,14 +147,14 @@ class ApiClassIntegration(
 
             if(searchApiResponse is SearchApiResponse.Success){
                 searchApiResponse.response.results.forEach { game ->
-                    if (game.metacritic != null || (game.ratingsCount ?: 0) > 0)
+                    if (game.metacritic != null || (game.ratings_count ?: 0) > 0)
                         suggestedList.add(game) else relatedList.add(game)
                 }
             }
 
             viewModel.suggestedResults(
                 suggestedList.sortedBy { metacritic -> metacritic.metacritic }.reversed()
-                    .sortedBy { ratings -> ratings.ratingsCount }.reversed()
+                    .sortedBy { ratings -> ratings.ratings_count }.reversed()
             )
 
             viewModel.relatedResults(relatedList.reversed())
@@ -182,6 +180,7 @@ class ApiClassIntegration(
         viewModel.viewModelScope.launch{
             try {
                 if (allGames.size <= 200) {
+
                     val result = apiImpl.networkCallSearch(
                         page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
                         pageSize = viewModel.uiStateGameDetails.value.pageSize ?: 40,
@@ -200,5 +199,6 @@ class ApiClassIntegration(
             }
         }
     }
+
 
 }
