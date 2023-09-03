@@ -1,7 +1,7 @@
 package app.database.nexusgn.Data.Utilities
 
 import android.content.Context
-import app.database.nexusgn.Data.ApiDataModel.Platforms
+import app.database.nexusgn.Data.Api.Platforms
 import app.database.nexusgn.R
 
 class IconManager(

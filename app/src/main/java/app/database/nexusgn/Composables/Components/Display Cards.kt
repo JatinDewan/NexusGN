@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.database.nexusgn.Data.ApiDataModel.GameInformation
+import app.database.nexusgn.Data.Api.GameInformation
 import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
 import coil.compose.SubcomposeAsyncImage
@@ -64,18 +64,20 @@ fun GridCards(
     var isSelected by remember { mutableStateOf(false) }
     val isSelectedDerived = remember { derivedStateOf { isSelected } }
 
-    val animateName = animateIntAsState(targetValue = if(isSelectedDerived.value) 4 else 1,
+    val animateName = animateIntAsState(
+        targetValue = if(isSelectedDerived.value) 4 else 1,
         label = ""
     )
-    val animateTags = animateIntAsState(targetValue = if(isSelectedDerived.value) 14 else 8,
+    val animateTags = animateIntAsState(
+        targetValue = if(isSelectedDerived.value) 14 else 10,
         label = ""
     )
 
     Card(
         modifier = Modifier
-            .width(config / 2)
+            .width((config / 2) -20.dp)
             .height(240.dp),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(5.dp)
     ) {
@@ -92,12 +94,8 @@ fun GridCards(
                         .data(gameDetails.backgroundImage)
                         .crossfade(true)
                         .build(),
-                    loading = {
-                        LoadingImages()
-                    },
-                    error = {
-                        LoadingImages()
-                    },
+                    loading = { LoadingImages() },
+                    error = { LoadingImages() },
                     contentDescription = stringResource(id = R.string.gameImages),
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,
@@ -187,10 +185,7 @@ fun SearchCards(
                             .data(gameDetails.backgroundImage)
                             .crossfade(true)
                             .build(),
-                        loading = {
-                            LoadingImages()
-                        },
-                        error = { },
+                        loading = { LoadingImages() },
                         contentDescription = stringResource(id = R.string.gameImages),
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.Center,
@@ -211,7 +206,6 @@ fun SearchCards(
                     size = 10.dp
                 )
 
-
                 gameDetails.name?.let {
                     Text(
                         text = it,
@@ -225,14 +219,12 @@ fun SearchCards(
                 }
 
                 TagsSearch(
-                    genre = gameDetails,
-                    textSize = 14,
+                    genre = gameDetails, textSize = 14,
                 )
             }
         }
     }
 }
-
 
 @Composable
         /**Refactored for use in [DisplayGames]*/
@@ -291,7 +283,6 @@ fun HighlightedGameForCategory(
             )
 
             gameInformation.name?.let {
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -311,7 +302,7 @@ fun HighlightedGameForCategory(
                         genre = gameInformation,
                         textSize = 10,
                         enabled = false,
-                        onClick = { },
+                        onClick = ::TODO,
                         showAll = true
                     )
                 }

@@ -11,7 +11,6 @@ val SubText = Color(0xFFb2b5b8) // onSecondary
 val TextBody = Color(0xFFd9dadc)
 val Text = Color(0xFFdee2e6) // tertiary
 
-val Excellent = Color(0xFF03c03c)
-val Recommended = Color(0xFF579abe)
-val Mid = Color(0xFFeada52)
-val Skip = Color(0xFFc23b23)
+val Excellent = Color(0xFF71b835)
+val Mid = Color(0xFFf9b54a)
+val Skip = Color(0xFFf52a39)

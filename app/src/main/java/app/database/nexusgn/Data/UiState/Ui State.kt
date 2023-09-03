@@ -1,6 +1,6 @@
 package app.database.nexusgn.Data.UiState
 
-import app.database.nexusgn.Data.ApiDataModel.GameInformation
+import app.database.nexusgn.Data.Api.GameInformation
 import app.database.nexusgn.ViewModel.SavedSearch
 
 data class ListUiState(
@@ -15,7 +15,7 @@ data class ListUiState(
 data class GamesUiState(
 
     val pageNumber: Int? = null,
-    val pageSize: Int? = null,
+    val pageSize: Int = 40,
     val id: Int? = null,
     val ordering: String? = null,
     val searchPhrase: String? = null,
@@ -31,12 +31,11 @@ data class GamesUiState(
 data class InteractionElements(
 
     val showScreenshot: Boolean = false,
-    val currentImage: Int? = null,
+    val currentImage: Int = 0,
     val gameHolder: GameInformation? = null,
     val gameHolderIndex: Int? = null,
     val hideSearch: Boolean = false,
-    val clickedCard: Boolean = false,
-    val noMorePages: Int? = null,
+    val noMorePages: Boolean = false,
     val isTextRestricted: Boolean = false,
     val isSearchFocused: Boolean = false,
     val unsuccessfulSearch: Boolean = false

@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -71,7 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import app.database.nexusgn.Data.ApiDataModel.Images
+import app.database.nexusgn.Data.Api.Images
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
@@ -112,7 +111,6 @@ fun ImageViewer(
             showNavigationBar = true,
             show = showScreenshots
         )
-        //vertical pager could be perfect for nested scroll header???
         HorizontalPager(
             modifier = Modifier
                 .fillMaxSize()

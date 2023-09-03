@@ -1,4 +1,4 @@
-package app.database.nexusgn.Data.ApiDataModel
+package app.database.nexusgn.Data.Api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

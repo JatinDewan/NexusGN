@@ -1,9 +1,9 @@
 package app.database.nexusgn.Data.Implementations
 
-import app.database.nexusgn.Data.ApiDataModel.GameDetails
-import app.database.nexusgn.Data.ApiDataModel.NexusGNData
-import app.database.nexusgn.Data.ApiDataModel.Screenshots
-import app.database.nexusgn.Data.ApiService.RawgApi
+import app.database.nexusgn.Data.Api.GameDetails
+import app.database.nexusgn.Data.Api.NexusGNData
+import app.database.nexusgn.Data.Api.RawgApi
+import app.database.nexusgn.Data.Api.Screenshots
 
 class RepositoryImpl(
     private val api: RawgApi,

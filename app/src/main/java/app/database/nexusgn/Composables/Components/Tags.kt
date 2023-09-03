@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.database.nexusgn.Data.ApiDataModel.GameDetails
-import app.database.nexusgn.Data.ApiDataModel.Platform
-import app.database.nexusgn.Data.ApiDataModel.Platforms
+import app.database.nexusgn.Data.Api.GameDetails
+import app.database.nexusgn.Data.Api.Platform
+import app.database.nexusgn.Data.Api.Platforms
 import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
 
@@ -69,20 +69,20 @@ fun GenreTabs(
     list: List<Platform>,
     viewModel: NexusGNViewModel
 ){
-    Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Headers(text = viewModel.stringProvider(R.string.genre))
-
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+    if(list.isNotEmpty()){
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            list.forEach {
-                it.name?.let { name ->
+            Headers(text = viewModel.stringProvider(R.string.genre))
+
+            FlowRow(
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                list.forEach { name ->
                     IndividualTags(
-                        name = name,
+                        name = name.name ?: "",
                         clickCategory = {
-                            viewModel.updateGenres(name)
+                            viewModel.updateGenres(name.name ?: "")
                             viewModel.apiHandler.getGames()
                         }
                     )
@@ -165,7 +165,6 @@ fun Metacritic(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AllLinks(
-    targetAnimation: Boolean,
     gameDetails: GameDetails,
     viewModel: NexusGNViewModel,
     context: Context
@@ -175,60 +174,57 @@ fun AllLinks(
                 !gameDetails.redditUrl.isNullOrEmpty() ||
                 !gameDetails.metacriticUrl.isNullOrEmpty()
 
-    if (targetAnimation) {
-        if(isLinkAvailable){
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+    if(isLinkAvailable){
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+
+            Headers(text = viewModel.stringProvider(R.string.Relevant_links))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
+                if (!gameDetails.website.isNullOrEmpty()) {
+                    Link(
+                        backgroundColour = Color.DarkGray,
+                        icon = R.drawable.web,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        text = viewModel.stringProvider(R.string.Website),
+                        textColour = MaterialTheme.colorScheme.tertiary,
+                        onClick = {
+                            viewModel.usefulLink(context, gameDetails.website)
+                        }
+                    )
+                }
 
-                Headers(text = viewModel.stringProvider(R.string.Relevant_links))
+                if (!gameDetails.redditUrl.isNullOrEmpty()) {
+                    Link(
+                        backgroundColour = Color(0xFFFF4500),
+                        icon = R.drawable.reddit_2,
+                        tint = Color.Unspecified,
+                        text = viewModel.stringProvider(R.string.Reddit),
+                        textColour = Color(0xFFffffff),
+                        onClick = {
+                            viewModel.usefulLink(context, gameDetails.redditUrl)
+                        }
+                    )
+                }
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    if (!gameDetails.website.isNullOrEmpty()) {
-                        Link(
-                            backgroundColour = Color.DarkGray,
-                            icon = R.drawable.web,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            text = viewModel.stringProvider(R.string.Website),
-                            textColour = MaterialTheme.colorScheme.tertiary,
-                            onClick = {
-                                viewModel.usefulLink(context, gameDetails.website)
-                            }
-                        )
-                    }
-
-                    if (!gameDetails.redditUrl.isNullOrEmpty()) {
-                        Link(
-                            backgroundColour = Color(0xFFFF4500),
-                            icon = R.drawable.reddit_2,
-                            tint = Color.Unspecified,
-                            text = viewModel.stringProvider(R.string.Reddit),
-                            textColour = Color(0xFFffffff),
-                            onClick = {
-                                viewModel.usefulLink(context, gameDetails.redditUrl)
-                            }
-                        )
-                    }
-
-                    if (!gameDetails.metacriticUrl.isNullOrEmpty()) {
-                        Link(
-                            backgroundColour = Color(0xFF333333),
-                            icon = R.drawable.metacritic,
-                            tint = Color.Unspecified,
-                            text = viewModel.stringProvider(R.string.Metacritic),
-                            textColour = Color(0xFFffcc34),
-                            onClick = {
-                                viewModel.usefulLink(context, gameDetails.metacriticUrl)
-                            }
-                        )
-                    }
+                if (!gameDetails.metacriticUrl.isNullOrEmpty()) {
+                    Link(
+                        backgroundColour = Color(0xFF333333),
+                        icon = R.drawable.metacritic,
+                        tint = Color.Unspecified,
+                        text = viewModel.stringProvider(R.string.Metacritic),
+                        textColour = Color(0xFFffcc34),
+                        onClick = {
+                            viewModel.usefulLink(context, gameDetails.metacriticUrl)
+                        }
+                    )
                 }
             }
         }
     }
-
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -315,7 +311,7 @@ fun IndividualTags(
 fun Headers(
     text: String,
     padding: Dp = 0.dp,
-    fontSize: TextUnit = 14.sp
+    fontSize: TextUnit = 15.sp
 ){
     Text(
         modifier = Modifier.padding(horizontal = padding),

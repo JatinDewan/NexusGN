@@ -57,7 +57,7 @@
     <string name="Impressive">Impressive</string>
     <string name="Decent">Decent</string>
     <string name="Trash">Trash</string>
-
+    <string name="NoMoreResults">No more results</string>
     <string name="poweredBy">Powered by RAWG</string>
     <string name="releaseDate">Release date</string>
     <string name="genre">Genres</string>
@@ -78,7 +78,8 @@
     <string name="Metacritic">Metacritic</string>
     <string name="skip">skip</string>
     <string name="New">New</string>
-    <string name="NoResults">No results found matching</string>
+    <string name="NoResults">No results found</string>
+    <string name="NotFound">404</string>
     <string name="Recommended">Recommended results</string>
     <string name="Related">Related</string>
 </resources>

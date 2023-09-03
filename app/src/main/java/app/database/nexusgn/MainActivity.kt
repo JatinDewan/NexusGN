@@ -23,7 +23,8 @@ class MainActivity : ComponentActivity() {
                     configuration = configuration,
                     allGamesApi = viewModel.apiHandler.allGamesApiResponse,
                     screenShots = viewModel.apiHandler.screenshotsApiResponse,
-                    gameDetails = viewModel.apiHandler.gameDetailsApiResponse
+                    gameDetails = viewModel.apiHandler.gameDetailsApiResponse,
+                    searchApiResponse = viewModel.apiHandler.searchApiResponse
                 )
             }
         }

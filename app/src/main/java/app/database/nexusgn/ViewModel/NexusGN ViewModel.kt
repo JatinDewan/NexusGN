@@ -14,13 +14,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
-import app.database.nexusgn.Data.ApiDataModel.GameInformation
-import app.database.nexusgn.Data.ApiIntegration.ApiClassIntegration
+import app.database.nexusgn.Data.Api.ApiClassIntegration
+import app.database.nexusgn.Data.Api.GameInformation
 import app.database.nexusgn.Data.Implementations.ContextProviderImpl
 import app.database.nexusgn.Data.Implementations.RepositoryImpl
+import app.database.nexusgn.Data.UiState.GameDetailsApiResponse
 import app.database.nexusgn.Data.UiState.GamesUiState
 import app.database.nexusgn.Data.UiState.InteractionElements
 import app.database.nexusgn.Data.UiState.ListUiState
+import app.database.nexusgn.Data.UiState.SearchApiResponse
 import app.database.nexusgn.Data.Utilities.DateConverter
 import app.database.nexusgn.Data.Utilities.IconManager
 import app.database.nexusgn.Data.Utilities.rangeFinder
@@ -45,7 +47,7 @@ data class SavedSearch(
 @HiltViewModel
 class NexusGNViewModel @Inject constructor(
     repository: RepositoryImpl,
-    private val context: ContextProviderImpl,
+    val context: ContextProviderImpl,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -65,7 +67,7 @@ class NexusGNViewModel @Inject constructor(
     val uiStateInteractionSource: StateFlow<InteractionElements> = interactionUiState.asStateFlow()
 
     val icons = IconManager(context.getContext())
-    val date = DateConverter()
+    val date = DateConverter(this)
 
     private val savesSearchResults = mutableListOf<SavedSearch>()
 
@@ -179,16 +181,6 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    fun manageDetailedView(clickedCard: Boolean){
-        viewModelScope.launch {
-            interactionUiState.update { updateField ->
-                updateField.copy(
-                    clickedCard = clickedCard
-                )
-            }
-        }
-    }
-
     private fun updateHeader(header: String){
         viewModelScope.launch {
             gameUiStateFlow.update { updateField ->
@@ -230,18 +222,10 @@ class NexusGNViewModel @Inject constructor(
     }
 
     private fun updateDate(date: String?) {
-        gameUiStateFlow.update { currentDate ->
-            currentDate.copy(
-                dateModification = date
-            )
-        }
-    }
-
-    private fun updateCode(code: Int?){
-        viewModelScope.launch {
-            interactionUiState.update { updateField ->
-                updateField.copy(
-                    noMorePages = code
+        viewModelScope.launch{
+            gameUiStateFlow.update { currentDate ->
+                currentDate.copy(
+                    dateModification = date
                 )
             }
         }
@@ -264,14 +248,14 @@ class NexusGNViewModel @Inject constructor(
 
                 uiStateGameDetails.value.searchPhrase?.isNotEmpty() == true || interactionUiState.value.isSearchFocused -> endSearch(focusManager)
 
-                interactionUiState.value.clickedCard -> manageDetailedView(false)
+                else -> apiHandler.returnToIdle()
             }
         }
     }
 
     fun checkStringLength(text: String?): Boolean {
-        val words = text?.split(" ")
-        return words?.size!! > 50
+        val textLength = text?.split(" ")
+        return textLength?.size!! > 50
     }
 
     fun totalLength(genre: GameInformation): Int{
@@ -280,8 +264,8 @@ class NexusGNViewModel @Inject constructor(
             totalLength += it.name?.length ?: 0
         }
         return when {
-            totalLength <= 20 -> 3
-            totalLength <= 25 -> 2
+            totalLength <= 16 -> 3
+            totalLength <= 20 -> 2
             else -> 1
         }
     }
@@ -292,13 +276,13 @@ class NexusGNViewModel @Inject constructor(
 
     fun navigateToDetailedView(
         focusManager: FocusManager,
-        entries: GameInformation,
+        entries: GameInformation
     ){
         updateId(entries.id!!)
-        apiHandler.getGameDetails()
+        apiHandler.getGameDetailsAndImages()
         updateInformation(entries)
-        manageDetailedView(true)
         focusManager.clearFocus()
+        if (apiHandler.gameDetailsApiResponse !is GameDetailsApiResponse.Success) update(TextFieldValue(""))
     }
 
     fun navigateToPage(
@@ -317,15 +301,7 @@ class NexusGNViewModel @Inject constructor(
         apiHandler.getGames()
     }
 
-    /*    fun highestRating(rating: List<Ratings>?): Ratings?{
-            return if(rating.isNullOrEmpty()) {
-                null
-            } else {
-                rating.sortedBy { it.count }.last()
-            }
-        }*/
-
-    fun saveSearchResults() {
+    private fun saveSearchResults() {
         val searchPhrase = uiStateGameDetails.value.searchPhrase
         val suggested = uiStateList.value.suggestedSearchResults
         val related = uiStateList.value.relatedSearchResults
@@ -334,9 +310,9 @@ class NexusGNViewModel @Inject constructor(
         if (!isSearch && !searchPhrase.isNullOrEmpty() && !suggested.isNullOrEmpty()) {
             savesSearchResults.add(
                 SavedSearch(
-                    searchPhrase,
-                    suggested,
-                    related ?: emptyList()
+                    searchPhrase = searchPhrase,
+                    savedSuggestedResults = suggested,
+                    savedRelatedResults = related ?: emptyList()
                 )
             )
         }
@@ -360,8 +336,8 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    fun gameRatingColourIndication(Rating: Int?): Color {
-        return when (Rating) {
+    fun gameRatingColourIndication(rating: Int?): Color {
+        return when (rating) {
             null -> Color.Transparent
             in 0..49 -> Skip
             in 50..74 -> Mid
@@ -369,28 +345,11 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    /*
-        fun ratingIcon(string: String?): Pair<String,Int> {
-            return when(string) {
-                stringProvider(R.string.exceptional) -> Pair(stringProvider(R.string.Outstanding),R.drawable.medal)
-                stringProvider(R.string.recommended) -> Pair(stringProvider(R.string.Impressive),R.drawable.positive_vote)
-                stringProvider(R.string.meh) -> Pair(stringProvider(R.string.Decent),R.drawable.neutral_face_1_)
-                else -> Pair(stringProvider(R.string.Trash),R.drawable.delete)
-            }
-        }
-    */
-
     fun usefulLink(context: Context, link: String){
         val uri = Uri.parse(link)
         val intent = Intent(Intent.ACTION_VIEW, uri)
         context.startActivity(intent)
     }
-
-    /*    fun ratingsTotal(list: List<Ratings>): Int{
-            var sumTotal = 0
-            list.forEach { sumTotal += it.count!! }
-            return sumTotal
-        }*/
 
     fun startSearch(
         focusManager: FocusManager,
@@ -399,21 +358,19 @@ class NexusGNViewModel @Inject constructor(
         viewModelScope.launch {
             if(searchPhrase.text.isNotBlank()){
                 if(searchPhrase.text != uiStateGameDetails.value.searchPhrase){
-                    if (interactionUiState.value.clickedCard) manageDetailedView(false)
+                    apiHandler.returnToIdle()
                     updatePage()
                     updateSearchTerm()
                     apiHandler.allGames.clear()
-                    updateCode(null)
                     apiHandler.getGamesSearch()
                     focusManager.clearFocus()
-                    searchList.scrollToItem(0)
+                    if(apiHandler.searchApiResponse is SearchApiResponse.Success) searchList.scrollToItem(0)
                 }
             }
         }
     }
 
     private fun clearQueries() {
-        updateCode(null)
         apiHandler.allGames.clear()
         updatePage()
         clearSearchTerm()
@@ -425,7 +382,7 @@ class NexusGNViewModel @Inject constructor(
         update(TextFieldValue(""))
         clearQueries()
         apiHandler.unsuccessfulSearch()
-        manageDetailedView(false)
+        apiHandler.returnToIdle()
     }
 
     fun clearSearch(focusRequester: FocusRequester){
@@ -443,7 +400,7 @@ class NexusGNViewModel @Inject constructor(
                     pageNumber = uiStateGameDetails.value.pageNumber?.plus(1)
                 )
             }
-            if(uiStateGameDetails.value.searchPhrase.isNullOrEmpty()) apiHandler.getGames() /*else getGamesSearch()*/
+            if(uiStateGameDetails.value.searchPhrase.isNullOrEmpty()) apiHandler.getGames()
         }
     }
 

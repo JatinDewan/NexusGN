@@ -1,8 +1,5 @@
-package app.database.nexusgn.Data.ApiService
+package app.database.nexusgn.Data.Api
 
-import app.database.nexusgn.Data.ApiDataModel.GameDetails
-import app.database.nexusgn.Data.ApiDataModel.NexusGNData
-import app.database.nexusgn.Data.ApiDataModel.Screenshots
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

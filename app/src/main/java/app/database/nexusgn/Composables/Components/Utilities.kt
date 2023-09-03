@@ -1,9 +1,6 @@
 package app.database.nexusgn.Composables.Components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -11,19 +8,24 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,9 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.database.nexusgn.Data.ApiDataModel.GameInformation
+import app.database.nexusgn.Data.Api.GameInformation
 import app.database.nexusgn.Data.Utilities.conditional
 import app.database.nexusgn.Data.Utilities.rangeFinder
+import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
 
 @Composable
@@ -108,7 +111,7 @@ fun Tags(
                 Card(
                     modifier = Modifier
                         .heightIn(max = animateState)
-                        .padding(end = 2.dp, top = 2.dp),
+                        .padding(top = 2.dp),
                     colors = CardDefaults.cardColors(
                         MaterialTheme.colorScheme.onSecondary
                     ),
@@ -149,7 +152,7 @@ fun Tags(
                             modifier = Modifier.padding(1.dp),
                             text = "+${anotherState.value}",
                             color = MaterialTheme.colorScheme.secondary,
-                            fontSize = 8.sp,
+                            fontSize = textSize.sp,
                             letterSpacing = 0.2.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -192,5 +195,48 @@ fun TagsSearch(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NoGamesFound(viewModel: NexusGNViewModel){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Spacer(modifier = Modifier.height(100.dp))
+        Text(
+            text = viewModel.stringProvider(R.string.NotFound),
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 100.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = viewModel.stringProvider(R.string.NoResults),
+            color = MaterialTheme.colorScheme.onTertiary,
+            fontSize = 20.sp,
+        )
+    }
+}
+
+@Composable
+fun LoadingPage(
+    paddingValues: PaddingValues = PaddingValues(top = 90.dp)
+){
+    Column(
+        modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .padding(10.dp)
+                .size(50.dp),
+            color = MaterialTheme.colorScheme.tertiary,
+            trackColor = MaterialTheme.colorScheme.primary
+        )
     }
 }

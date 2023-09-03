@@ -1,26 +1,28 @@
 package app.database.nexusgn.Composables.Components
 
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalOverscrollConfiguration
-import androidx.compose.foundation.background
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -28,9 +30,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +47,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,199 +70,271 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.database.nexusgn.Data.ApiDataModel.GameDetails
-import app.database.nexusgn.Data.ApiDataModel.GameInformation
-import app.database.nexusgn.Data.ApiDataModel.Screenshots
+import app.database.nexusgn.Data.Api.GameDetails
+import app.database.nexusgn.Data.Api.GameInformation
+import app.database.nexusgn.Data.UiState.GameDetailsApiResponse
+import app.database.nexusgn.Data.UiState.InteractionElements
+import app.database.nexusgn.Data.UiState.ScreenshotsApiResponse
 import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
         /**Refactored for use as overlay in [DisplayGames]*/
 fun GameCardsDetailed(
     viewModel: NexusGNViewModel,
-    gameInformation: GameInformation,
-    gameDetails: GameDetails,
-    screenshots: Screenshots,
-    visibility: Boolean
+    gameDetails: GameDetailsApiResponse,
+    screenshots: ScreenshotsApiResponse,
 ) {
-
+    val interactionUiState by viewModel.uiStateInteractionSource.collectAsState()
     val lazyState = rememberLazyListState()
-    var delayedVisibility by rememberSaveable { mutableStateOf(false) }
-    val delayedVisibilityDerived by remember { derivedStateOf { delayedVisibility } }
     val indexView = remember { derivedStateOf { lazyState.firstVisibleItemIndex } }
     val sheetState = rememberBottomSheetScaffoldState()
     val context = LocalContext.current
-
-    LaunchedEffect(visibility) {
-        delayedVisibility = if (visibility) { delay(400); true } else false
-    }
-
-    LaunchedEffect(indexView.value) {
-        viewModel.hideSearch(indexView.value > 0)
-    }
-
-    fullScreen(
-        show = visibility,
-        isSlideShow = true
+    val expandView by animateFloatAsState(
+        animationSpec = tween(200, easing = LinearOutSlowInEasing),
+        targetValue = when (gameDetails) {
+            is GameDetailsApiResponse.Loading -> 0.3f
+            is GameDetailsApiResponse.Success -> 1f
+            else -> 0f
+        },
+        label = ""
     )
 
-    AnimatedVisibility(
-        visible = visibility,
-        enter = slideInVertically(tween(400)) + fadeIn(tween(400)),
-        exit = fadeOut(tween(100))
+    LaunchedEffect(indexView.value) { viewModel.hideSearch(indexView.value > 0) }
+
+    Box(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
     ){
-        Column(
-            modifier = Modifier
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            CompositionLocalProvider(
-                LocalOverscrollConfiguration provides null
+        fullScreen(
+            show = gameDetails is GameDetailsApiResponse.Success,
+            isSlideShow = true
+        )
+
+        LoadingDetailedView(
+            expandView = expandView,
+            gameDetails = gameDetails
+        )
+
+        AnimatedContent(
+            targetState = gameDetails,
+            transitionSpec = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(durationMillis = 500, easing = EaseIn)
+                ) + fadeIn(tween(durationMillis = 200, easing = EaseIn)) togetherWith
+                    fadeOut(tween(durationMillis = 0))
+            },
+            label = ""
+        ) { details ->
+
+            if(details is GameDetailsApiResponse.Success){
+               MainDetailedView(
+                   sheetState = sheetState,
+                   lazyState = lazyState,
+                   viewModel = viewModel,
+                   context = context,
+                   screenshots = screenshots,
+                   details = details.gameDetails,
+                   interactionUiState = interactionUiState
+               )
+            }
+
+            if (details is GameDetailsApiResponse.Error){
+                NoGamesFound(viewModel = viewModel)
+            }
+
+        }
+    }
+    
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainDetailedView(
+    sheetState: BottomSheetScaffoldState,
+    lazyState: LazyListState,
+    viewModel: NexusGNViewModel,
+    context: Context,
+    screenshots: ScreenshotsApiResponse,
+    details: GameDetails,
+    interactionUiState: InteractionElements
+){
+    BottomSheetScaffold(
+        scaffoldState = sheetState,
+        sheetContent = {
+            GameDetailsSheet(
+                lazyState = lazyState,
+                viewModel = viewModel,
+                context = context,
+                screenshots = screenshots,
+                gameDetails = details,
+                interactionUiState = interactionUiState,
+            )
+        },
+        sheetPeekHeight = LocalConfiguration.current.screenHeightDp.dp / 2,
+        containerColor = MaterialTheme.colorScheme.secondary,
+        sheetContainerColor = MaterialTheme.colorScheme.secondary,
+        sheetShadowElevation = 10.dp,
+        sheetShape = RoundedCornerShape(0.dp),
+        sheetTonalElevation = 10.dp,
+        sheetDragHandle = {
+            interactionUiState.gameHolder?.let { game ->
+                DetailedPageHeader(
+                    gameInformation = game,
+                    viewModel = viewModel,
+                    gameDetails = details,
+                )
+            }
+        }
+    ) {
+        BackgroundImageDetailedView(
+            gameBackgroundImage = interactionUiState.gameHolder?.backgroundImage,
+            isScrolledUp = sheetState.bottomSheetState.targetValue == SheetValue.Expanded,
+        )
+    }
+}
+
+@Composable
+fun GameDetailsSheet(
+    lazyState: LazyListState,
+    viewModel: NexusGNViewModel,
+    context: Context,
+    gameDetails: GameDetails,
+    interactionUiState: InteractionElements,
+    screenshots: ScreenshotsApiResponse
+){
+
+    LazyColumn(
+        state = lazyState,
+        modifier = Modifier
+            .heightIn(max = (LocalConfiguration.current.screenHeightDp.dp - 300.dp))
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.Start
             ) {
-                BottomSheetScaffold(
-                    scaffoldState = sheetState,
-                    sheetContent = {
-                        LazyColumn(
-                            state = lazyState,
-                            modifier = Modifier
-                                .heightIn(max = (LocalConfiguration.current.screenHeightDp.dp - 300.dp))
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 10.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                                    horizontalAlignment = Alignment.Start
-                                ) {
 
-                                    screenshots.results.let {
-                                        ScreenshotViewer(
-                                            images = it,
-                                            viewModel = viewModel,
-                                            visibility = delayedVisibilityDerived
-                                        )
-                                    }
+                if(screenshots is ScreenshotsApiResponse.Success) {
+                    ScreenshotViewer(
+                        images = screenshots.screenshots.results,
+                        viewModel = viewModel,
+                    )
+                }
 
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(horizontal = 10.dp)
-                                            .fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                                        horizontalAlignment = Alignment.Start
-                                    ) {
-                                        AboutGameDetails(
-                                            targetAnimation = delayedVisibilityDerived,
-                                            gameDetails = gameDetails,
-                                            viewModel = viewModel
-                                        )
-
-                                        AdditionalDetailsColumns(
-                                            targetAnimation = delayedVisibilityDerived,
-                                            gameInformation = gameInformation,
-                                            gameDetails = gameDetails,
-                                            viewModel = viewModel,
-                                            context = context
-                                        )
-
-                                        RAWGWaterMark(
-                                            isVisible = delayedVisibilityDerived
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    sheetPeekHeight = LocalConfiguration.current.screenHeightDp.dp / 2,
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    sheetContainerColor = MaterialTheme.colorScheme.secondary,
-                    sheetShadowElevation = 10.dp,
-                    sheetShape = RoundedCornerShape(0.dp),
-                    sheetTonalElevation = 10.dp,
-                    sheetDragHandle = {
-                        DetailedPageHeader(
-                            animatedVisibility = delayedVisibilityDerived,
-                            gameInformation = gameInformation,
-                            viewModel = viewModel,
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    AboutGameDetails(
+                        gameDetails = gameDetails,
+                        viewModel = viewModel
+                    )
+                    interactionUiState.gameHolder?.let { game ->
+                        AdditionalDetailsColumns(
+                            gameInformation = game,
                             gameDetails = gameDetails,
+                            viewModel = viewModel,
+                            context = context
                         )
                     }
-                ) {
-
-                    BackgroundImageDetailedView(
-                        gameBackgroundImage = gameInformation.backgroundImage,
-                        ifScrolledUp = sheetState.bottomSheetState.targetValue == SheetValue.Expanded,
-                    )
+                    RAWGWaterMark()
                 }
             }
         }
     }
-
 }
+
+@Composable
+fun LoadingDetailedView(
+    expandView: Float,
+    gameDetails: GameDetailsApiResponse
+){
+    Card(
+        modifier = Modifier.fillMaxHeight(expandView),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
+        elevation = CardDefaults.elevatedCardElevation(10.dp),
+        shape = RoundedCornerShape(30.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if(gameDetails is GameDetailsApiResponse.Loading){
+                Column {
+                    Spacer(modifier = Modifier.height(55.dp))
+                    LoadingPage(PaddingValues(0.dp))
+                }
+            }
+        }
+    }
+}
+
 @Composable
         /**Refactored for [GameCardsDetailed]*/
 fun AdditionalDetailsColumns(
-    targetAnimation: Boolean,
     gameInformation: GameInformation,
     gameDetails: GameDetails,
     viewModel: NexusGNViewModel,
     context: Context
 ) {
-    if (targetAnimation) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
 
-            Column(
-                modifier = Modifier.fillMaxWidth(0.5f),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                gameInformation.platforms?.let {
-                    PlatformsTabs(
-                        list = it,
-                        viewModel = viewModel
-                    )
-                }
-                gameInformation.genres?.let { genre ->
-                    GenreTabs(
-                        list = genre,
-                        viewModel = viewModel
-                    )
-                }
-                AllLinks(
-                    targetAnimation = targetAnimation,
-                    gameDetails = gameDetails,
-                    viewModel = viewModel,
-                    context = context
+        Column(
+            modifier = Modifier.fillMaxWidth(0.5f),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            gameInformation.platforms?.let {
+                PlatformsTabs(
+                    list = it,
+                    viewModel = viewModel
                 )
             }
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                gameInformation.released?.let { dateReleased ->
-                    viewModel.date.convertDateFormat(dateReleased)
-                }?.let { ReleaseDates(
-                    date = it,
+            gameInformation.genres?.let { genre ->
+                GenreTabs(
+                    list = genre,
                     viewModel = viewModel
-                ) }
+                )
+            }
+            AllLinks(
+                gameDetails = gameDetails,
+                viewModel = viewModel,
+                context = context
+            )
+        }
 
-                gameDetails.esrbRating?.name?.let {
-                    Rating(
-                        rating = it,
-                        viewModel = viewModel
-                    )
-                }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            gameInformation.released?.let { dateReleased ->
+                viewModel.date.convertDateFormat(dateReleased)
+            }?.let { ReleaseDates(
+                date = it,
+                viewModel = viewModel
+            ) }
+
+            gameDetails.esrbRating?.name?.let {
+                Rating(
+                    rating = it,
+                    viewModel = viewModel
+                )
             }
         }
     }
@@ -267,57 +344,55 @@ fun AdditionalDetailsColumns(
 @Composable
         /**Refactored for [GameCardsDetailed]*/
 fun AboutGameDetails(
-    targetAnimation: Boolean,
     gameDetails: GameDetails,
     viewModel: NexusGNViewModel
 ){
-    if (targetAnimation) {
-        var maxLines by rememberSaveable { mutableStateOf(false) }
-        val maxLinesDerived = remember { derivedStateOf { maxLines } }
+    var maxLines by rememberSaveable { mutableStateOf(false) }
+    val maxLinesDerived = remember { derivedStateOf { maxLines } }
 
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+
+            Headers(text = viewModel.stringProvider(R.string.Description))
+
+            gameDetails.rawDescription?.let {
+                LimitedTextView(
+                    text = it,
+                    maxWords = if(maxLinesDerived.value)  10000 else 50,
+                    viewModel = viewModel
+                )
+            }
+        }
+
+        val checkStringDerived = remember {
+            derivedStateOf{ viewModel.checkStringLength(gameDetails.rawDescription) }
+        }
+
+        if (checkStringDerived.value) {
+            CompositionLocalProvider(
+                LocalMinimumInteractiveComponentEnforcement provides false,
             ) {
-
-                Headers(text = viewModel.stringProvider(R.string.Description))
-
-                gameDetails.rawDescription?.let {
-                    LimitedTextView(
-                        text = it,
-                        maxWords = if(maxLinesDerived.value)  10000 else 50,
-                        viewModel = viewModel
-                    )
-                }
-            }
-
-            val checkStringDerived = remember {
-                derivedStateOf{ viewModel.checkStringLength(gameDetails.rawDescription) }
-            }
-            if (checkStringDerived.value) {
-                CompositionLocalProvider(
-                    LocalMinimumInteractiveComponentEnforcement provides false,
+                Card(
+                    modifier = Modifier.padding(top = 10.dp),
+                    onClick = {
+                        maxLines = !maxLines
+                    },
+                    colors = CardDefaults.cardColors(
+                        Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(5.dp)
                 ) {
-                    Card(
-                        modifier = Modifier.padding(top = 10.dp),
-                        onClick = {
-                            maxLines = !maxLines
-                        },
-                        colors = CardDefaults.cardColors(
-                            Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(5.dp)
-                    ) {
-                        Text(
-                            text = if (maxLinesDerived.value) viewModel.stringProvider(R.string.Show_less) else viewModel.stringProvider(R.string.Show_more),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onTertiary
-                        )
-                    }
+                    Text(
+                        text = if (maxLinesDerived.value) viewModel.stringProvider(R.string.Show_less) else viewModel.stringProvider(R.string.Show_more),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onTertiary
+                    )
                 }
             }
         }
@@ -327,113 +402,106 @@ fun AboutGameDetails(
 @Composable
         /**Refactored for [GameCardsDetailed]*/
 fun DetailedPageHeader(
-    animatedVisibility: Boolean,
     gameInformation: GameInformation,
     viewModel: NexusGNViewModel,
     gameDetails: GameDetails
 ) {
-
-    AnimatedVisibility(
-        visible = animatedVisibility,
-        enter = fadeIn(tween(300, 200))
-    ) {
-        Card(
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
-            shape = RoundedCornerShape(0.dp),
-        ){
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background),
+        shape = RoundedCornerShape(0.dp),
+    ){
+        Box(modifier = Modifier.fillMaxWidth()){
             Box(
-                modifier = Modifier.fillMaxWidth()
-            ){
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 15.dp)
+                        .fillMaxWidth(0.7f),
+                    verticalArrangement = Arrangement.spacedBy(7.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 15.dp)
-                            .fillMaxWidth(0.7f),
-                        verticalArrangement = Arrangement.spacedBy(7.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                        Card(
+                            shape = RoundedCornerShape(5.dp),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.onSecondary)
                         ) {
-                            Card(
-                                shape = RoundedCornerShape(5.dp),
-                                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.onSecondary)
-                            ) {
-                                gameInformation.released?.let { gameRelease ->
-                                    Text(
-                                        modifier = Modifier.padding(3.dp),
-                                        text = viewModel.date.convertDateFormat(gameRelease),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
+                            gameInformation.released?.let { gameRelease ->
+                                Text(
+                                    modifier = Modifier.padding(3.dp),
+                                    text = viewModel.date.convertDateFormat(gameRelease),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
-
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            PlatformLogos(
-                                viewModel = viewModel,
-                                gameInformation = gameInformation,
-                                size = 15.dp
-                            )
                         }
 
-                        Text(
-                            text = viewModel.stringProvider(R.string.Average_Playtime,gameDetails.playtime.toString()).uppercase()/*"Average Playtime: ${gameDetails.playtime} hours".uppercase()*/,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            fontSize = 12.sp,
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        PlatformLogos(
+                            viewModel = viewModel,
+                            gameInformation = gameInformation,
+                            size = 15.dp
                         )
-                        gameInformation.name?.let { gameName ->
-                            Text(
-                                modifier = Modifier.padding(horizontal = 10.dp),
-                                text = gameName,
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                    }
+
+                    Text(
+                        text = viewModel.stringProvider(
+                            name = R.string.Average_Playtime,
+                            extra = gameDetails.playtime.toString()
+                        ).uppercase(),
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        fontSize = 12.sp,
+                    )
+                    gameInformation.name?.let { gameName ->
+                        Text(
+                            modifier = Modifier.padding(horizontal = 10.dp),
+                            text = gameName,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
+            }
 
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.TopEnd
-                ) {
-                    gameDetails.metacritic?.let {
-                        Metacritic(
-                            score = it,
-                            colour = viewModel.gameRatingColourIndication(it),
-                        )
-                    }
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                gameDetails.metacritic?.let { score ->
+                    Metacritic(
+                        score = score,
+                        colour = viewModel.gameRatingColourIndication(score),
+                    )
                 }
             }
         }
     }
 }
 
-
 @Composable
         /**Refactored for [GameCardsDetailed]*/
 fun BackgroundImageDetailedView(
-    ifScrolledUp: Boolean,
+    isScrolledUp: Boolean,
     gameBackgroundImage: String?,
 ){
 
-    val animateImage by animateFloatAsState(
-        targetValue = if (ifScrolledUp) 0.35f else 0.55f,
-        tween(200),
+    val animateHeight by animateFloatAsState(
+        targetValue = if (isScrolledUp) 0.35f else 0.65f,
         label = ""
     )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(animateImage),
+            .fillMaxHeight(animateHeight),
         elevation = CardDefaults.elevatedCardElevation(10.dp),
         shape = RoundedCornerShape(0.dp),
     ) {
@@ -486,15 +554,12 @@ fun PlatformLogos(
 @Composable
         /**Refactored for use in [GameCardsDetailed] & [SearchBar]*/
 fun RAWGWaterMark(
-    isVisible: Boolean
 ) {
-    if(isVisible){
-        Text(
-            text = stringResource(id = R.string.poweredBy),
-            color = MaterialTheme.colorScheme.onTertiary,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            fontSize = 8.sp
-        )
-    }
+    Text(
+        text = stringResource(id = R.string.poweredBy),
+        color = MaterialTheme.colorScheme.onTertiary,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        fontSize = 8.sp
+    )
 }
