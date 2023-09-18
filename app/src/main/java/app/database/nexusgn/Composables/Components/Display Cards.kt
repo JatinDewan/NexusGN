@@ -61,15 +61,18 @@ fun GridCards(
 ) {
 
     val config = LocalConfiguration.current.screenWidthDp.dp
+
+    /*Needs to be individual values per card, can't use model*/
     var isSelected by remember { mutableStateOf(false) }
-    val isSelectedDerived = remember { derivedStateOf { isSelected } }
+    val isSelectedDerived by remember { derivedStateOf { isSelected } }
 
     val animateName = animateIntAsState(
-        targetValue = if(isSelectedDerived.value) 4 else 1,
+        targetValue = if(isSelectedDerived) 4 else 1,
         label = ""
     )
+
     val animateTags = animateIntAsState(
-        targetValue = if(isSelectedDerived.value) 14 else 10,
+        targetValue = if(isSelectedDerived) 14 else 10,
         label = ""
     )
 
@@ -114,7 +117,7 @@ fun GridCards(
                         }
                         .fillMaxWidth()
                         .heightIn(max = 240.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background.copy(0.9f)),
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary.copy(0.9f)),
                     shape = RoundedCornerShape(14.dp),
                 ) {
                     Column(
@@ -146,10 +149,8 @@ fun GridCards(
                         Tags(
                             genre = gameDetails,
                             textSize = animateTags.value,
-                            enabled = isSelectedDerived.value,
-                            showAll = isSelectedDerived.value,
+                            showAll = isSelectedDerived,
                             viewModel = viewModel,
-                            onClick = { }
                         )
                     }
                 }
@@ -301,8 +302,6 @@ fun HighlightedGameForCategory(
                         viewModel = viewModel,
                         genre = gameInformation,
                         textSize = 10,
-                        enabled = false,
-                        onClick = ::TODO,
                         showAll = true
                     )
                 }

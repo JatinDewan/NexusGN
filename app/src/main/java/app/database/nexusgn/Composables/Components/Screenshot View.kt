@@ -41,6 +41,7 @@ fun ScreenshotViewer(
     viewModel: NexusGNViewModel,
 ){
     val lazyRowState = rememberLazyListState()
+
     Column {
 
         Headers(
@@ -74,12 +75,8 @@ fun ScreenshotViewer(
                             .data(screenshots.image)
                             .crossfade(true)
                             .build(),
-                        loading = {
-                            LoadingImages()
-                        },
-                        error = {
-                            LoadingImages()
-                        },
+                        loading = { LoadingImages() },
+                        error = { LoadingImages() },
                         contentDescription = viewModel.stringProvider(R.string.gameImages),
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.Center,

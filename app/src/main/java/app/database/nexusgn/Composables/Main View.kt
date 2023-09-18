@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -86,7 +87,7 @@ fun MainView(
 
     val nestedScrollConnection by remember {
         val offSet = 200f
-        derivedStateOf{
+        mutableStateOf(
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                     if (canBarScroll) {
@@ -107,8 +108,10 @@ fun MainView(
                     return super.onPreFling(available)
                 }
             }
-        }
+        )
     }
+
+    val nestedScrollObservable by remember { derivedStateOf { nestedScrollConnection } }
 
     Surface(
         color = MaterialTheme.colorScheme.secondary
@@ -135,18 +138,17 @@ fun MainView(
                 viewModel = viewModel,
                 lazyListState = lazyListState,
                 focusManager = focusManager,
-                nestedScrollConnection = nestedScrollConnection,
+                nestedScrollConnection = nestedScrollObservable,
                 showSearch = { barOffsetY = 0f },
                 allGames = listUiState.allGamesUi ?: emptyList(),
                 allGamesApi = allGamesApi,
                 screenshots = screenShots,
                 gameDetails = gameDetails,
-                offset = animateOffset
             )
 
             EmbeddedSearchBar(
                 viewModel = viewModel,
-                isCardOpen = gameDetails is GameDetailsApiResponse.Success && screenShots is ScreenshotsApiResponse.Success,
+                isCardOpen = gameDetails is GameDetailsApiResponse.Success,
                 focusManager = focusManager,
                 focusRequester = focusRequester,
                 startSearch = { viewModel.startSearch(focusManager, searchListState) },
@@ -161,7 +163,8 @@ fun MainView(
                 relatedShow = !listUiState.relatedSearchResults.isNullOrEmpty(),
                 clearSearch = { viewModel.clearSearch(focusRequester) },
                 searchListState = searchListState,
-                searchApiResponse = searchApiResponse
+                searchApiResponse = searchApiResponse,
+                gameDetails = gameDetails
             )
 
             if(screenShots is ScreenshotsApiResponse.Success){

@@ -2,7 +2,6 @@ package app.database.nexusgn.Data.Implementations
 
 import app.database.nexusgn.Data.Api.GameDetails
 import app.database.nexusgn.Data.Api.NexusGNData
-import app.database.nexusgn.Data.Api.RawgApi
 import app.database.nexusgn.Data.Api.Screenshots
 
 class RepositoryImpl(
@@ -14,7 +13,7 @@ class RepositoryImpl(
         pageSize: Int,
         search: String,
         searchPrecise: Boolean,
-        searchExact: Boolean
+        searchExact: Boolean,
     ): NexusGNData {
         return api.getGameSearch(
             page,
@@ -34,16 +33,17 @@ class RepositoryImpl(
         platforms: String?
     ): NexusGNData {
         return api.getGameImageAndData(
-            page, pageSize, dates, ordering, excludeAdditions, platforms
+            page,
+            pageSize,
+            dates,
+            ordering,
+            excludeAdditions,
+            platforms
         )
     }
 
-    suspend fun networkCallDetails(id: Int): GameDetails {
-        return api.getGameDetails(id)
-    }
+    suspend fun networkCallDetails(id: Int): GameDetails = api.getGameDetails(id)
 
-    suspend fun networkCallScreenshots(id: Int): Screenshots {
-        return api.getGameScreenshots(id)
-    }
+    suspend fun networkCallScreenshots(id: Int): Screenshots = api.getGameScreenshots(id)
 
 }

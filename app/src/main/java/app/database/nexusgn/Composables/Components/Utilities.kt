@@ -3,12 +3,10 @@ package app.database.nexusgn.Composables.Components
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.database.nexusgn.Data.Api.GameInformation
-import app.database.nexusgn.Data.Utilities.conditional
 import app.database.nexusgn.Data.Utilities.rangeFinder
 import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
@@ -49,16 +46,13 @@ import app.database.nexusgn.ViewModel.NexusGNViewModel
 fun LimitedTextView(
     text: String,
     maxWords: Int,
-    viewModel: NexusGNViewModel
 ) {
     val words = text.split(" ")
     val limitedText = if (words.size > maxWords) {
-        viewModel.updateLimitedText(true)
         val limitedWords = words.take(maxWords)
         val limitedText = limitedWords.joinToString(" ")
         "$limitedText..."
     } else {
-        viewModel.updateLimitedText(false)
         text
     }
 
@@ -70,15 +64,13 @@ fun LimitedTextView(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Tags(
     viewModel: NexusGNViewModel,
     genre: GameInformation,
     textSize: Int,
-    enabled: Boolean,
     showAll: Boolean = false,
-    onClick:() -> Unit
 ){
     val animateState by animateDpAsState(
         targetValue = if(showAll) 35.dp else 20.dp,
@@ -118,12 +110,10 @@ fun Tags(
                     shape = RoundedCornerShape(5.dp),
                     elevation = CardDefaults.cardElevation(10.dp)
                 ) {
-                    text.name?.let {
+                    text.name?.let { name ->
                         Text(
-                            modifier = Modifier
-                                .conditional(enabled) { clickable { onClick() } }
-                                .padding(vertical = 3.dp, horizontal = 6.dp),
-                            text = it,
+                            modifier = Modifier.padding(vertical = 3.dp, horizontal = 6.dp),
+                            text = name,
                             color = MaterialTheme.colorScheme.secondary,
                             fontSize = textSize.sp,
                             textAlign = TextAlign.Center,

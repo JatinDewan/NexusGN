@@ -16,10 +16,9 @@ android {
         applicationId = "app.database.nexusgn"
         minSdk = 24
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.2"
         compileSdkPreview = "UpsideDownCake"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -77,7 +76,7 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.5.0")
 
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
-
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.compose.ui:ui:1.5.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("androidx.core:core-ktx:1.10.1")

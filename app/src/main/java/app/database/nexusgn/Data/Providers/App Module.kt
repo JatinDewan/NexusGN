@@ -1,8 +1,8 @@
 package app.database.nexusgn.Data.Providers
 
 import android.app.Application
-import app.database.nexusgn.Data.Api.RawgApi
 import app.database.nexusgn.Data.Implementations.ContextProviderImpl
+import app.database.nexusgn.Data.Implementations.RawgApi
 import app.database.nexusgn.Data.Implementations.RepositoryImpl
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module

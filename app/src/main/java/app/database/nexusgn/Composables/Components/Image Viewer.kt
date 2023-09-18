@@ -48,6 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -73,6 +74,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import app.database.nexusgn.Data.Api.Images
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -85,22 +87,23 @@ fun ImageViewer(
     imageLocation: Int
 ) {
 
-    val pagerState = rememberPagerState {
-        allImages.size
-    }
+    val pagerState = rememberPagerState { allImages.size }
     var showBar by rememberSaveable { mutableStateOf(true) }
     val listGreaterThanOne by remember { derivedStateOf { allImages.size > 1 } }
     val isPortrait by remember {
         derivedStateOf { configuration.orientation == Configuration.ORIENTATION_PORTRAIT }
     }
-    var zoom by remember { mutableStateOf(1f) }
+    var zoom by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     var size by remember { mutableStateOf(IntSize.Zero) }
     val animateSize by animateFloatAsState(targetValue = zoom, label = "")
     val animateOffset by animateOffsetAsState(targetValue = offset, label = "")
     val isZoomInProgress by remember { derivedStateOf { zoom == 1f } }
 
-    LaunchedEffect(imageLocation) { pagerState.scrollToPage(imageLocation) }
+    LaunchedEffect(imageLocation) {
+        delay(200)
+        pagerState.scrollToPage(imageLocation)
+    }
 
     AnimatedVisibility(
         visible = showScreenshots,
@@ -151,9 +154,7 @@ fun ImageViewer(
                         }
                     )
                 }
-                .onSizeChanged {
-                    size = it
-                }
+                .onSizeChanged { image -> size = image }
                 .graphicsLayer {
                     translationX = animateOffset.x
                     translationY = animateOffset.y
@@ -164,7 +165,6 @@ fun ImageViewer(
             state = pagerState,
             pageSpacing = 20.dp,
             userScrollEnabled = isZoomInProgress,
-            reverseLayout = false,
             contentPadding = PaddingValues(0.dp),
             beyondBoundsPageCount = 0,
             pageSize = PageSize.Fill,

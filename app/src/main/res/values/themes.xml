@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.NexusGN" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.NexusGN" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/themeColour</item>
+        <item name="android:navigationBarColor">@color/themeColour</item>
+        <item name="android:windowBackground">@color/themeColour</item>
+    </style>
+
+    <style name="SplashTheme" parent="Theme.SplashScreen">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:statusBarColor">@color/themeColour</item>
+        <item name="android:navigationBarColor">@color/themeColour</item>
+        <item name="windowSplashScreenBackground">@color/themeColour</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen_12</item>
+        <item name="postSplashScreenTheme">@style/Theme.NexusGN</item>
+    </style>
+
 </resources>

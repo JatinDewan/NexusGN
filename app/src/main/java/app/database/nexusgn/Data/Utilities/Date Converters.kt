@@ -1,15 +1,12 @@
 package app.database.nexusgn.Data.Utilities
 
-import app.database.nexusgn.ViewModel.NexusGNViewModel
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class DateConverter(
-    private val viewModel: NexusGNViewModel
-) {
+class DateConverter {
 
     fun convertDateFormat(inputDate: String): String {
         val locale: Locale = Locale.getDefault()

@@ -6,9 +6,6 @@ import android.content.Context
 class ContextProviderImpl(
     private val appContext: Application
 ) {
-
-    fun getContext(): Context {
-        return appContext.applicationContext
-    }
+    fun getContext(): Context = appContext.applicationContext
 
 }

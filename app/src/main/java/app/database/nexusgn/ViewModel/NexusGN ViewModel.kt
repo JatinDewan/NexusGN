@@ -18,7 +18,6 @@ import app.database.nexusgn.Data.Api.ApiClassIntegration
 import app.database.nexusgn.Data.Api.GameInformation
 import app.database.nexusgn.Data.Implementations.ContextProviderImpl
 import app.database.nexusgn.Data.Implementations.RepositoryImpl
-import app.database.nexusgn.Data.UiState.GameDetailsApiResponse
 import app.database.nexusgn.Data.UiState.GamesUiState
 import app.database.nexusgn.Data.UiState.InteractionElements
 import app.database.nexusgn.Data.UiState.ListUiState
@@ -63,11 +62,11 @@ class NexusGNViewModel @Inject constructor(
     val gameUiStateFlow = MutableStateFlow(GamesUiState())
     val uiStateGameDetails: StateFlow<GamesUiState> = gameUiStateFlow.asStateFlow()
 
-    val interactionUiState = MutableStateFlow(InteractionElements())
+    private val interactionUiState = MutableStateFlow(InteractionElements())
     val uiStateInteractionSource: StateFlow<InteractionElements> = interactionUiState.asStateFlow()
 
     val icons = IconManager(context.getContext())
-    val date = DateConverter(this)
+    val date = DateConverter()
 
     private val savesSearchResults = mutableListOf<SavedSearch>()
 
@@ -75,7 +74,7 @@ class NexusGNViewModel @Inject constructor(
         updateHeader(context.getContext().getString(R.string.Trending))
         updateDate(date.bestRecently())
         updatePage()
-        apiHandler.getGames()
+        apiHandler.getGamesList()
         apiHandler.retryRequest()
     }
 
@@ -99,16 +98,6 @@ class NexusGNViewModel @Inject constructor(
 
     fun stringProvider(name: Int, extra: String = ""): String {
         return context.getContext().getString(name,extra)
-    }
-
-    fun updateLimitedText(restriction: Boolean){
-        viewModelScope.launch {
-            interactionUiState.update { updateField ->
-                updateField.copy(
-                    isTextRestricted = restriction
-                )
-            }
-        }
     }
 
     private fun updatePlatforms(platforms: String?){
@@ -191,16 +180,6 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    fun hideSearch(hideSearch: Boolean){
-        viewModelScope.launch {
-            interactionUiState.update { updateField ->
-                updateField.copy(
-                    hideSearch = hideSearch
-                )
-            }
-        }
-    }
-
     fun showScreenshot(boolean: Boolean){
         viewModelScope.launch {
             interactionUiState.update { updateField ->
@@ -253,10 +232,7 @@ class NexusGNViewModel @Inject constructor(
         }
     }
 
-    fun checkStringLength(text: String?): Boolean {
-        val textLength = text?.split(" ")
-        return textLength?.size!! > 50
-    }
+    fun checkStringLength(text: String?): Boolean = text?.split(" ")?.size!! > 50
 
     fun totalLength(genre: GameInformation): Int{
         var totalLength = 0
@@ -279,10 +255,9 @@ class NexusGNViewModel @Inject constructor(
         entries: GameInformation
     ){
         updateId(entries.id!!)
-        apiHandler.getGameDetailsAndImages()
+        apiHandler.getGamesInformationAndImages()
         updateInformation(entries)
         focusManager.clearFocus()
-        if (apiHandler.gameDetailsApiResponse !is GameDetailsApiResponse.Success) update(TextFieldValue(""))
     }
 
     fun navigateToPage(
@@ -298,7 +273,7 @@ class NexusGNViewModel @Inject constructor(
         updateExclusion(exclusion)
         updatePlatforms(platforms)
         clearQueries()
-        apiHandler.getGames()
+        apiHandler.getGamesList()
     }
 
     private fun saveSearchResults() {
@@ -362,9 +337,9 @@ class NexusGNViewModel @Inject constructor(
                     updatePage()
                     updateSearchTerm()
                     apiHandler.allGames.clear()
-                    apiHandler.getGamesSearch()
+                    apiHandler.getSearchedGames()
                     focusManager.clearFocus()
-                    if(apiHandler.searchApiResponse is SearchApiResponse.Success) searchList.scrollToItem(0)
+                    if (apiHandler.searchApiResponse is SearchApiResponse.Success) searchList.scrollToItem(0)
                 }
             }
         }
@@ -400,7 +375,7 @@ class NexusGNViewModel @Inject constructor(
                     pageNumber = uiStateGameDetails.value.pageNumber?.plus(1)
                 )
             }
-            if(uiStateGameDetails.value.searchPhrase.isNullOrEmpty()) apiHandler.getGames()
+            if(uiStateGameDetails.value.searchPhrase.isNullOrEmpty()) apiHandler.getGamesList()
         }
     }
 
@@ -416,13 +391,6 @@ class NexusGNViewModel @Inject constructor(
         listUiStateFlow.update { updateField ->
             updateField.copy(
                 relatedSearchResults = related
-            )
-        }
-    }
-    fun updateGenres(genres: String) {
-        gameUiStateFlow.update { updateField ->
-            updateField.copy(
-                genres = genres
             )
         }
     }

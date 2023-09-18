@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.database.nexusgn.Data.Api.GameInformation
+import app.database.nexusgn.Data.UiState.GameDetailsApiResponse
 import app.database.nexusgn.Data.UiState.SearchApiResponse
 import app.database.nexusgn.Data.Utilities.conditional
 import app.database.nexusgn.R
@@ -97,7 +98,8 @@ fun EmbeddedSearchBar(
     suggestedShow: Boolean,
     relatedShow: Boolean,
     searchListState: LazyListState,
-    searchApiResponse: SearchApiResponse
+    searchApiResponse: SearchApiResponse,
+    gameDetails: GameDetailsApiResponse
 ) {
 
     val searchColour by animateColorAsState(
@@ -125,7 +127,7 @@ fun EmbeddedSearchBar(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .conditional(isCardOpen){ windowInsetsPadding(windowInsetsPadding) }
+            .conditional(isCardOpen) { windowInsetsPadding(windowInsetsPadding) }
     ) {
         Card(
             modifier = Modifier.offset { offset },
@@ -146,13 +148,15 @@ fun EmbeddedSearchBar(
                         isCardOpen = isCardOpen,
                         isSearchActive = isSearchActive,
                         openDrawer = openDrawer::invoke,
-                        endSearch = endSearch::invoke
+                        endSearch = endSearch::invoke,
+                        gameDetails = gameDetails
                     )
 
                     SearchBarLogo(
                         isSearchFocused = isSearchFocused,
                         isCardOpen = isCardOpen,
-                        isSearchActive = isSearchActive
+                        isSearchActive = isSearchActive,
+                        gameDetails = gameDetails
                     )
 
                     SearchBar(
@@ -235,9 +239,8 @@ fun SearchBar(
 
             AnimatedContent(
                 targetState = isSearchFocused || searchPhraseBlank,
-                transitionSpec = {
-                    fadeIn(tween(400,300)) togetherWith fadeOut()
-                }, label = ""
+                transitionSpec = { fadeIn(tween(400,300)) togetherWith fadeOut() },
+                label = ""
             ) { animateThis ->
                 if (animateThis) {
                     Card(
@@ -252,7 +255,7 @@ fun SearchBar(
                         )
                     }
                 } else {
-                    if(!searchPhraseBlank && searchPhraseIsEmpty){
+                    if(!searchPhraseBlank && searchPhraseIsEmpty) {
                         Icon(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -363,11 +366,12 @@ fun SearchBox(
                             }
                         )
                     }
-                    .fillMaxWidth(0.7f)
+                    .fillMaxWidth(0.7f),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
                     text = viewModel.stringProvider(R.string.Resume),
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 18.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -375,7 +379,7 @@ fun SearchBox(
 
                 Text(
                     text = gamePhrase,
-                    color = MaterialTheme.colorScheme.onTertiary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 18.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -436,10 +440,11 @@ fun IconSelection(
     isCardOpen: Boolean,
     isSearchActive: Boolean,
     openDrawer: () -> Unit,
-    endSearch: () -> Unit
+    endSearch: () -> Unit,
+    gameDetails: GameDetailsApiResponse
 ){
     Crossfade(
-        targetState = isSearchFocused || isCardOpen || isSearchActive,
+        targetState = isSearchFocused || isCardOpen || isSearchActive || gameDetails is GameDetailsApiResponse.Error,
         animationSpec = tween(300), label = ""
     ) { screen ->
         if (screen) {
@@ -488,10 +493,14 @@ fun IconSelection(
 fun SearchBarLogo(
     isSearchFocused: Boolean,
     isCardOpen: Boolean,
-    isSearchActive: Boolean
+    isSearchActive: Boolean,
+    gameDetails: GameDetailsApiResponse
 ){
+
     AnimatedVisibility(
-        visible = !isSearchFocused && !isCardOpen && !isSearchActive,
+        visible = !isSearchFocused && !isCardOpen && !isSearchActive &&
+                gameDetails !is GameDetailsApiResponse.Error &&
+                gameDetails !is GameDetailsApiResponse.Loading,
         enter = fadeIn(tween(400,300)),
         exit = fadeOut(tween(100))
     ) {

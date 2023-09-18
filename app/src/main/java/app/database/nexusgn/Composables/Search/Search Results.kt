@@ -81,7 +81,7 @@ fun SearchResultsDisplay(
         Crossfade(
             targetState = searchApiResponse,
             animationSpec = tween(300),
-            label = "Search Results"
+            label = ""
         ) { searchState ->
             when (searchState) {
                 is SearchApiResponse.Idle -> SavedSearchResults(
@@ -106,7 +106,6 @@ fun SearchResultsDisplay(
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalFoundationApi::class)

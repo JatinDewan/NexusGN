@@ -45,19 +45,12 @@ fun PlatformsTabs(
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-
         Headers(text = viewModel.stringProvider(R.string.Platforms))
-
         FlowRow(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            list.forEach {
-                it.platform?.name?.let { platformName ->
-                    IndividualTags(
-                        name = platformName,
-                        clickCategory = { }
-                    )
-                }
+            list.forEach { game ->
+                game.platform?.name?.let { platformName -> IndividualTags( name = platformName) }
             }
         }
     }
@@ -78,15 +71,7 @@ fun GenreTabs(
             FlowRow(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                list.forEach { name ->
-                    IndividualTags(
-                        name = name.name ?: "",
-                        clickCategory = {
-                            viewModel.updateGenres(name.name ?: "")
-                            viewModel.apiHandler.getGames()
-                        }
-                    )
-                }
+                list.forEach { name -> IndividualTags(name = name.name) }
             }
         }
     }
@@ -104,7 +89,6 @@ fun Rating(
         Headers(text = viewModel.stringProvider(R.string.Rating))
         IndividualTags(
             name = rating,
-            clickCategory = { /*TODO()*/ },
             colour = MaterialTheme.colorScheme.onSecondary,
             textColour = MaterialTheme.colorScheme.secondary,
             padding = 5.dp
@@ -126,7 +110,6 @@ fun ReleaseDates(
         Headers(text = viewModel.stringProvider(R.string.releaseDate))
         IndividualTags(
             name = date,
-            clickCategory = { /*TODO*/ },
             colour = MaterialTheme.colorScheme.onSecondary,
             textColour = MaterialTheme.colorScheme.secondary,
             padding = 5.dp
@@ -171,8 +154,8 @@ fun AllLinks(
 ){
     val isLinkAvailable =
         !gameDetails.website.isNullOrEmpty() ||
-                !gameDetails.redditUrl.isNullOrEmpty() ||
-                !gameDetails.metacriticUrl.isNullOrEmpty()
+        !gameDetails.redditUrl.isNullOrEmpty() ||
+        !gameDetails.metacriticUrl.isNullOrEmpty()
 
     if(isLinkAvailable){
         Column(
@@ -279,7 +262,6 @@ fun Link(
 @Composable
 fun IndividualTags(
     name: String,
-    clickCategory:() -> Unit,
     colour: Color = MaterialTheme.colorScheme.primary,
     textColour : Color = MaterialTheme.colorScheme.secondary,
     padding: Dp = 1.dp,
@@ -290,7 +272,6 @@ fun IndividualTags(
     ){
         Card(
             modifier = Modifier.padding(padding),
-            onClick = { clickCategory() },
             colors = CardDefaults.cardColors(colour),
             shape = RoundedCornerShape(5.dp)
         ) {

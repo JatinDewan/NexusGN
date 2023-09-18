@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -80,7 +79,6 @@ import app.database.nexusgn.ViewModel.NexusGNViewModel
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
         /**Refactored for use as overlay in [DisplayGames]*/
 fun GameCardsDetailed(
@@ -90,8 +88,6 @@ fun GameCardsDetailed(
 ) {
     val interactionUiState by viewModel.uiStateInteractionSource.collectAsState()
     val lazyState = rememberLazyListState()
-    val indexView = remember { derivedStateOf { lazyState.firstVisibleItemIndex } }
-    val sheetState = rememberBottomSheetScaffoldState()
     val context = LocalContext.current
     val expandView by animateFloatAsState(
         animationSpec = tween(200, easing = LinearOutSlowInEasing),
@@ -102,8 +98,6 @@ fun GameCardsDetailed(
         },
         label = ""
     )
-
-    LaunchedEffect(indexView.value) { viewModel.hideSearch(indexView.value > 0) }
 
     Box(
         modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
@@ -130,9 +124,18 @@ fun GameCardsDetailed(
             label = ""
         ) { details ->
 
-            if(details is GameDetailsApiResponse.Success){
+            if (details is GameDetailsApiResponse.Error){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.secondary),
+                ) {
+                    NoGamesFound(viewModel = viewModel)
+                }
+            }
+
+            if(details is GameDetailsApiResponse.Success) {
                MainDetailedView(
-                   sheetState = sheetState,
                    lazyState = lazyState,
                    viewModel = viewModel,
                    context = context,
@@ -141,11 +144,6 @@ fun GameCardsDetailed(
                    interactionUiState = interactionUiState
                )
             }
-
-            if (details is GameDetailsApiResponse.Error){
-                NoGamesFound(viewModel = viewModel)
-            }
-
         }
     }
     
@@ -155,7 +153,6 @@ fun GameCardsDetailed(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainDetailedView(
-    sheetState: BottomSheetScaffoldState,
     lazyState: LazyListState,
     viewModel: NexusGNViewModel,
     context: Context,
@@ -163,6 +160,8 @@ fun MainDetailedView(
     details: GameDetails,
     interactionUiState: InteractionElements
 ){
+    val sheetState = rememberBottomSheetScaffoldState()
+
     BottomSheetScaffold(
         scaffoldState = sheetState,
         sheetContent = {
@@ -348,7 +347,7 @@ fun AboutGameDetails(
     viewModel: NexusGNViewModel
 ){
     var maxLines by rememberSaveable { mutableStateOf(false) }
-    val maxLinesDerived = remember { derivedStateOf { maxLines } }
+    val maxLinesDerived by remember { derivedStateOf { maxLines } }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -363,32 +362,24 @@ fun AboutGameDetails(
             gameDetails.rawDescription?.let {
                 LimitedTextView(
                     text = it,
-                    maxWords = if(maxLinesDerived.value)  10000 else 50,
-                    viewModel = viewModel
+                    maxWords = if(maxLinesDerived)  10000 else 50,
                 )
             }
         }
 
-        val checkStringDerived = remember {
-            derivedStateOf{ viewModel.checkStringLength(gameDetails.rawDescription) }
-        }
-
-        if (checkStringDerived.value) {
+        if (viewModel.checkStringLength(gameDetails.rawDescription)) {
             CompositionLocalProvider(
                 LocalMinimumInteractiveComponentEnforcement provides false,
             ) {
                 Card(
                     modifier = Modifier.padding(top = 10.dp),
-                    onClick = {
-                        maxLines = !maxLines
-                    },
-                    colors = CardDefaults.cardColors(
-                        Color.Transparent
-                    ),
+                    onClick = { maxLines = !maxLines },
+                    colors = CardDefaults.cardColors(Color.Transparent),
                     shape = RoundedCornerShape(5.dp)
                 ) {
                     Text(
-                        text = if (maxLinesDerived.value) viewModel.stringProvider(R.string.Show_less) else viewModel.stringProvider(R.string.Show_more),
+                        modifier = Modifier.padding(2.dp),
+                        text = if (maxLinesDerived) viewModel.stringProvider(R.string.Show_less) else viewModel.stringProvider(R.string.Show_more),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onTertiary

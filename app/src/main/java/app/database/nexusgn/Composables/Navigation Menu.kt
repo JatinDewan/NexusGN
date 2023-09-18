@@ -1,7 +1,5 @@
 package app.database.nexusgn.Composables
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -384,14 +382,16 @@ fun CategoryHeaders(
 
     val gameUiState by viewModel.uiStateGameDetails.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val animateBackgroundColour = animateColorAsState(
-        targetValue = if(gameUiState.pageHeader == viewModel.stringProvider(header))
+    val currentState = gameUiState.pageHeader == viewModel.stringProvider(header)
+
+    val animateBackgroundColour by animateColorAsState(
+        targetValue = if(currentState)
             MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary,
         label = ""
     )
 
     val animateTextColour = animateColorAsState(
-        targetValue = if(gameUiState.pageHeader == viewModel.stringProvider(header))
+        targetValue = if(currentState)
             MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary, label = ""
     )
 
@@ -415,7 +415,7 @@ fun CategoryHeaders(
         Card(
             modifier = Modifier.height(35.dp),
             shape = RoundedCornerShape(5.dp),
-            colors = CardDefaults.cardColors(animateBackgroundColour.value)
+            colors = CardDefaults.cardColors(animateBackgroundColour),
         ){
 
             Row {
@@ -467,19 +467,21 @@ fun SubEntries(
 ){
     val gameUiState by viewModel.uiStateGameDetails.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val animateBackgroundColour = animateColorAsState(
-        targetValue = if(gameUiState.pageHeader == entryHeaderString)
+    val currentState = gameUiState.pageHeader == entryHeaderString
+
+    val animateBackgroundColour by animateColorAsState(
+        targetValue = if(currentState)
             MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         label = ""
     )
 
-    val animateComponentsColour = animateColorAsState(
-        targetValue = if(gameUiState.pageHeader == entryHeaderString)
+    val animateComponentsColour by animateColorAsState(
+        targetValue = if(currentState)
             MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary, label = ""
     )
 
-    val animateTextBackground = animateColorAsState(
-        targetValue = if(gameUiState.pageHeader == entryHeaderString)
+    val animateTextBackground by animateColorAsState(
+        targetValue = if(currentState)
             MaterialTheme.colorScheme.background else Color.Transparent, label = ""
     )
 
@@ -503,7 +505,7 @@ fun SubEntries(
         Card(
             modifier = Modifier.size(28.dp),
             shape = RoundedCornerShape(5.dp),
-            colors = CardDefaults.cardColors(animateBackgroundColour.value)
+            colors = CardDefaults.cardColors(animateBackgroundColour)
         ) {
             Icon(
                 modifier = Modifier
@@ -511,19 +513,19 @@ fun SubEntries(
                     .fillMaxSize(),
                 imageVector = entryIcon,
                 contentDescription = null,
-                tint = animateComponentsColour.value
+                tint = animateComponentsColour
             )
         }
 
         Card(
             shape = RoundedCornerShape(5.dp),
-            colors = CardDefaults.cardColors(animateTextBackground.value)
+            colors = CardDefaults.cardColors(animateTextBackground)
         ){
             entryHeaderString?.let {
                 Text(
                     modifier = Modifier.padding(5.dp),
                     text = it,
-                    color = animateComponentsColour.value,
+                    color = animateComponentsColour,
                     fontSize = 14.sp
                 )
             }

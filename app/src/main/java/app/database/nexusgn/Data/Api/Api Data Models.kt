@@ -52,7 +52,7 @@ data class Requirements(
 @Serializable
 data class Platform(
     val id: Int? = null,
-    val name: String? = null,
+    val name: String = "",
     val slug: String? = null,
     val image: String? = null,
     @SerialName(value = "year_end")

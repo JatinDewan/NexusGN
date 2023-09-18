@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
+import app.database.nexusgn.Data.Implementations.ApiImplementation
 import app.database.nexusgn.Data.Implementations.RepositoryImpl
 import app.database.nexusgn.Data.UiState.AllGamesApiResponse
 import app.database.nexusgn.Data.UiState.GameDetailsApiResponse
@@ -18,10 +19,9 @@ import kotlinx.coroutines.launch
 class ApiClassIntegration(
     private val viewModel: NexusGNViewModel,
     private val apiImpl: RepositoryImpl
-) {
+): ApiImplementation {
 
     val allGames = mutableListOf<GameInformation>()
-
     var allGamesApiResponse: AllGamesApiResponse by mutableStateOf(AllGamesApiResponse.Loading)
         private set
     var searchApiResponse: SearchApiResponse by mutableStateOf(SearchApiResponse.Idle)
@@ -70,8 +70,7 @@ class ApiClassIntegration(
         viewModel.viewModelScope.launch{
             while (allGamesApiResponse is AllGamesApiResponse.Error) {
                 delay(5000)
-                getGames()
-                println("RELOADING")
+                getGamesList()
             }
         }
     }
@@ -137,28 +136,7 @@ class ApiClassIntegration(
         }
     }
 
-    fun getGames(){
-        viewModel.viewModelScope.launch{
-            allGamesApiResponse = AllGamesApiResponse.Loading
-            try {
-                val result = apiImpl.networkCall(
-                    page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
-                    pageSize = viewModel.uiStateGameDetails.value.pageSize,
-                    dates = viewModel.uiStateGameDetails.value.dateModification ?: "",
-                    ordering = viewModel.uiStateGameDetails.value.ordering ?: "",
-                    platforms = viewModel.uiStateGameDetails.value.platforms,
-                    excludeAdditions = viewModel.uiStateGameDetails.value.excludeAdditions,
-                )
-                updateResponse(result)
-                sortAllGamesList()
-            } catch (e: Exception) {
-                println(e.message)
-                exceptionChecker(e)
-            }
-        }
-    }
-
-    fun getGamesSearch() {
+    override fun getSearchedGames() {
         viewModel.viewModelScope.launch{
             searchApiResponse = SearchApiResponse.Loading
             try {
@@ -178,7 +156,28 @@ class ApiClassIntegration(
         }
     }
 
-    fun getGameDetailsAndImages() {
+    override fun getGamesList() {
+        viewModel.viewModelScope.launch{
+            allGamesApiResponse = AllGamesApiResponse.Loading
+            try {
+                val result = apiImpl.networkCall(
+                    page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
+                    pageSize = viewModel.uiStateGameDetails.value.pageSize,
+                    dates = viewModel.uiStateGameDetails.value.dateModification ?: "",
+                    ordering = viewModel.uiStateGameDetails.value.ordering ?: "",
+                    platforms = viewModel.uiStateGameDetails.value.platforms,
+                    excludeAdditions = viewModel.uiStateGameDetails.value.excludeAdditions
+                )
+                updateResponse(result)
+                sortAllGamesList()
+            } catch (e: Exception) {
+                println(e.message)
+                exceptionChecker(e)
+            }
+        }
+    }
+
+    override fun getGamesInformationAndImages() {
         viewModel.viewModelScope.launch{
             gameDetailsApiResponse = GameDetailsApiResponse.Loading
             screenshotsApiResponse = ScreenshotsApiResponse.Loading
@@ -193,5 +192,62 @@ class ApiClassIntegration(
             }
         }
     }
+
+//    fun getGames(){
+//        viewModel.viewModelScope.launch{
+//            allGamesApiResponse = AllGamesApiResponse.Loading
+//            try {
+//                val result = apiImpl.networkCall(
+//                    page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
+//                    pageSize = viewModel.uiStateGameDetails.value.pageSize,
+//                    dates = viewModel.uiStateGameDetails.value.dateModification ?: "",
+//                    ordering = viewModel.uiStateGameDetails.value.ordering ?: "",
+//                    platforms = viewModel.uiStateGameDetails.value.platforms,
+//                    excludeAdditions = viewModel.uiStateGameDetails.value.excludeAdditions
+//                )
+//                updateResponse(result)
+//                sortAllGamesList()
+//            } catch (e: Exception) {
+//                println(e.message)
+//                exceptionChecker(e)
+//            }
+//        }
+//    }
+//
+//    fun getGamesSearch() {
+//        viewModel.viewModelScope.launch{
+//            searchApiResponse = SearchApiResponse.Loading
+//            try {
+//                val result = apiImpl.networkCallSearch(
+//                    page = viewModel.uiStateGameDetails.value.pageNumber ?: 1,
+//                    pageSize = viewModel.uiStateGameDetails.value.pageSize,
+//                    search = viewModel.searchPhrase.text,
+//                    searchPrecise = true,
+//                    searchExact = false
+//                )
+//                updateSearchResponse(result)
+//                sortSearchResults()
+//                unsuccessfulSearch()
+//            } catch (e: Exception) {
+//                searchApiResponse = SearchApiResponse.Error(e)
+//            }
+//        }
+//    }
+//
+//    fun getGameDetailsAndImages() {
+//        viewModel.viewModelScope.launch{
+//            gameDetailsApiResponse = GameDetailsApiResponse.Loading
+//            screenshotsApiResponse = ScreenshotsApiResponse.Loading
+//            try {
+//                val gameDetails = apiImpl.networkCallDetails(viewModel.uiStateGameDetails.value.id!!)
+//                val screenshots = apiImpl.networkCallScreenshots(viewModel.uiStateGameDetails.value.id!!)
+//                updateGameDetails(gameDetails)
+//                updateScreenshotDetail(screenshots)
+//            } catch (e: Exception) {
+//                gameDetailsApiResponse = GameDetailsApiResponse.Error(e)
+//                screenshotsApiResponse = ScreenshotsApiResponse.Error(e)
+//            }
+//        }
+//    }
 
 }

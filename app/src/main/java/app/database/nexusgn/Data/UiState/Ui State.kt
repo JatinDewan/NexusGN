@@ -24,7 +24,6 @@ data class GamesUiState(
     val excludeAdditions: Boolean = false,
     val platforms: String? = null,
     val highlightedGame: GameInformation? = null,
-    val genres: String? = null
 
 )
 
@@ -33,11 +32,6 @@ data class InteractionElements(
     val showScreenshot: Boolean = false,
     val currentImage: Int = 0,
     val gameHolder: GameInformation? = null,
-    val gameHolderIndex: Int? = null,
-    val hideSearch: Boolean = false,
-    val noMorePages: Boolean = false,
-    val isTextRestricted: Boolean = false,
     val isSearchFocused: Boolean = false,
-    val unsuccessfulSearch: Boolean = false
 
 )

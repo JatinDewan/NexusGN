@@ -1,7 +1,6 @@
 package app.database.nexusgn.Composables
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +21,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -59,11 +56,8 @@ import app.database.nexusgn.R
 import app.database.nexusgn.ViewModel.NexusGNViewModel
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class, ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-
         /**Refactored for use in [MainView]*/
 fun DisplayGames(
     viewModel: NexusGNViewModel,
@@ -75,7 +69,6 @@ fun DisplayGames(
     gameDetails: GameDetailsApiResponse,
     screenshots: ScreenshotsApiResponse,
     allGamesApi: AllGamesApiResponse,
-    offset: Float
 ){
     val gameUiState by viewModel.uiStateGameDetails.collectAsState()
     val snackState = remember { SnackbarHostState() }
@@ -257,7 +250,7 @@ fun SnackBarMessage(
                     colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
                     elevation = CardDefaults.elevatedCardElevation(10.dp)
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)){
+                    Column(modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp )){
                         Text(
                             text = viewModel.stringProvider(R.string.NoMoreResults),
                             color = MaterialTheme.colorScheme.background,

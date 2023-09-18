@@ -1,5 +1,8 @@
-package app.database.nexusgn.Data.Api
+package app.database.nexusgn.Data.Implementations
 
+import app.database.nexusgn.Data.Api.GameDetails
+import app.database.nexusgn.Data.Api.NexusGNData
+import app.database.nexusgn.Data.Api.Screenshots
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -8,6 +11,7 @@ private const val key = "?key=5b9205042d1845988697e1b80120cc2a"
 
 interface RawgApi{
 
+
     @GET("games$key")
     suspend fun getGameImageAndData(
         @Query("page")page: Int,
@@ -15,9 +19,8 @@ interface RawgApi{
         @Query("dates")dates: String,
         @Query("ordering")ordering: String,
         @Query("exclude_additions")excludeAdditions: Boolean,
-        @Query("platforms")platforms: String?,
+        @Query("platforms")platforms: String?
     ): NexusGNData
-
 
     @GET("games$key")
     suspend fun getGameSearch(
